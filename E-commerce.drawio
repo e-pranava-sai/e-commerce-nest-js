@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2024-02-15T17:06:40.166Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36" etag="azGzJnDD8oiiDzCsS-kD" version="23.1.4" type="github" pages="7">
+<mxfile host="app.diagrams.net" modified="2024-02-15T17:07:01.654Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36" etag="svPl18a25DosAEPSrFRi" version="23.1.4" type="github" pages="7">
   <diagram name="users-products" id="OHTJHfxgYQxPX2jJm4Qd">
     <mxGraphModel dx="16250" dy="3713" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -2439,7 +2439,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="Zc3Z7M1Ok3f5uG0KTYkp-53" value="Order-items&lt;br&gt;OrderItem Id" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;fontSize=50;fontColor=#1d262b;spacing=0;strokeColor=#FFFFFF;strokeOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#FFFFFF;strokeWidth=3.8;lucidId=_g.ab7biIx~K;" vertex="1" parent="1">
+        <mxCell id="Zc3Z7M1Ok3f5uG0KTYkp-53" value="Order-items&lt;br&gt;User Id, OrderItem Id" style="html=1;overflow=block;blockSpacing=1;whiteSpace=wrap;fontSize=50;fontColor=#1d262b;spacing=0;strokeColor=#FFFFFF;strokeOpacity=100;rounded=1;absoluteArcSize=1;arcSize=9;fillColor=#FFFFFF;strokeWidth=3.8;lucidId=_g.ab7biIx~K;" vertex="1" parent="1">
           <mxGeometry x="-5504.5" y="6015" width="775" height="155" as="geometry" />
         </mxCell>
         <mxCell id="Zc3Z7M1Ok3f5uG0KTYkp-54" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="Zc3Z7M1Ok3f5uG0KTYkp-51" target="zYLBXRz5Pp2EjaRmuopD-33">
