@@ -1,4 +1,12 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { User } from 'src/users/user.entity';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity('orders')
 export class Orders {
@@ -13,6 +21,10 @@ export class Orders {
 
   @Column({ type: 'int' })
   user_id: number;
+
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
+  private _user: User;
 
   @Column({ type: 'date', default: () => 'CURRENT_DATE' })
   date: Date;
