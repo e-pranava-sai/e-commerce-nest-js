@@ -44,7 +44,7 @@ export class ProductsController {
     return this.productsService.getProductByOwnerId(ownerId);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, AuthorizeGuard)
   @Post()
   addProduct(
     @Body('name') name: string,

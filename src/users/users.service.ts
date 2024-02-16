@@ -15,7 +15,7 @@ export class UsersService {
   async login(
     email: string,
     password: string,
-  ): Promise<{ access_token: string }> {
+  ): Promise<{ access_token: string; refresh_token: string }> {
     try {
       const user = await this.userRepository.findOne({
         where: { email },
@@ -32,8 +32,22 @@ export class UsersService {
         );
       }
 
-      const payload = { userId: user.id, isAdmin: user.is_admin };
-      return { access_token: await this.jwtService.signAsync(payload) };
+      const payload = {
+        userId: user.id,
+        isAdmin: user.is_admin,
+        email: user.email,
+      };
+      return {
+        access_token: await this.jwtService.signAsync(payload, {
+          secret: process.env.ACCESS_TOKEN_SECRET,
+          expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '60s',
+        }),
+
+        refresh_token: await this.jwtService.signAsync(payload, {
+          secret: process.env.REFRESH_TOKEN_SECRET,
+          expiresIn: process.env.REFRESH_TOKEN_EXPIRY || '1d',
+        }),
+      };
     } catch (e) {
       console.log(e);
       throw new CustomException(
@@ -48,7 +62,7 @@ export class UsersService {
     email: string,
     password: string,
     is_admin: boolean,
-  ): Promise<{ access_token: string }> {
+  ): Promise<{ access_token: string; refresh_token: string }> {
     try {
       const exis_user = await this.userRepository.findOne({
         where: { email },
@@ -69,9 +83,22 @@ export class UsersService {
 
       const user = await this.userRepository.save(new_user);
 
-      const payload = { userId: user.id, isAdmin: user.is_admin };
+      const payload = {
+        userId: user.id,
+        isAdmin: user.is_admin,
+        email: user.email,
+      };
 
-      return { access_token: await this.jwtService.signAsync(payload) };
+      return {
+        access_token: await this.jwtService.signAsync(payload, {
+          secret: process.env.ACCESS_TOKEN_SECRET,
+          expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '60s',
+        }),
+        refresh_token: await this.jwtService.signAsync(payload, {
+          secret: process.env.REFRESH_TOKEN_SECRET,
+          expiresIn: process.env.REFRESH_TOKEN_EXPIRY || '1d',
+        }),
+      };
     } catch (e) {
       console.log(e);
       throw new CustomException(

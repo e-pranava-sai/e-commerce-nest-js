@@ -24,7 +24,7 @@ import { OrderItemsModule } from './order_items/order_items.module';
       password: process.env.PASSWORD,
       database: process.env.DATABASE,
       synchronize: true,
-      dropSchema: true,
+      // dropSchema: true,
       logging: true,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
     }),
@@ -37,8 +37,6 @@ import { OrderItemsModule } from './order_items/order_items.module';
     OrderItemsModule,
     JwtModule.register({
       global: true,
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '1d' },
     }),
   ],
   controllers: [AppController],
