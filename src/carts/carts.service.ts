@@ -51,6 +51,7 @@ export class CartsService {
   async createCartByUserId(userId: number): Promise<{ cart: Cart }> {
     try {
       const user = await this.userRepository.findOne({ where: { id: userId } });
+      console.log('cart', user);
       if (!user) {
         throw new CustomException('User not found', HttpStatus.NOT_FOUND);
       }
@@ -61,6 +62,8 @@ export class CartsService {
       if (existCart) {
         throw new CustomException('Cart already exist', HttpStatus.BAD_REQUEST);
       }
+
+      console.log('cart', existCart, 'userID: ', userId);
 
       const cart = await this.cartRepository.save({ user_id: userId });
       return { cart };

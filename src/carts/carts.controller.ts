@@ -32,7 +32,7 @@ export class CartsController {
 
   @UseGuards(AuthGuard, AuthorizeGuard)
   @Get(':userId')
-  getCartByUserId(userId: number): Record<string, any> {
+  getCartByUserId(@Param('userId') userId: number): Record<string, any> {
     return this.cartsService.getCartByUserId(userId);
   }
 
@@ -44,7 +44,7 @@ export class CartsController {
 
   @UseGuards(AuthGuard, AuthorizeGuard)
   @Post(':userId')
-  createCartByUserId(userId: number): Record<string, any> {
+  createCartByUserId(@Param('userId') userId: number): Record<string, any> {
     return this.cartsService.createCartByUserId(userId);
   }
 

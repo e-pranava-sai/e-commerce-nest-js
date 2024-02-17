@@ -150,7 +150,7 @@ export class ProductsService {
 
   async updateProductByOwnerId(
     ownerId: number,
-    id: number,
+    productId: number,
     name: string,
     price: number,
     category: string,
@@ -162,24 +162,25 @@ export class ProductsService {
       if (!user) {
         throw new CustomException('User not found', HttpStatus.NOT_FOUND);
       }
-      const existProduct = await this.productRepository.findOne({
-        where: { id },
-      });
 
+      const existProduct = await this.productRepository.findOne({
+        where: { id: productId },
+      });
       if (!existProduct) {
         throw new CustomException('Product not found', HttpStatus.NOT_FOUND);
       }
-      if (existProduct.owner_id !== ownerId) {
+
+      if (+existProduct.owner_id !== +ownerId) {
         throw new CustomException(
-          'Product not found for this user',
+          `Product not found for this user: ${ownerId}, product id: ${productId}.`,
           HttpStatus.UNAUTHORIZED,
         );
       }
       const updated_product = await this.productRepository.update(
-        { id },
+        { id: productId },
         { name, price, category },
       );
-      return { message: `Product with ID: ${id} updated successfully` };
+      return { message: `Product with ID: ${productId} updated successfully` };
     } catch (e) {
       console.log(e);
       throw new CustomException(

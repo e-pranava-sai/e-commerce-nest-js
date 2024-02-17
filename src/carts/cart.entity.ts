@@ -17,5 +17,5 @@ export class Cart {
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
-  private _product: User;
+  private _user: User;
 }

@@ -12,6 +12,8 @@ export class AuthorizeGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
 
+    console.log('authorize Gaurd', request.is_admin);
+
     if (!request.is_admin) {
       throw new CustomException(
         'You are not authorized to perform this action',

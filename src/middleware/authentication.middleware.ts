@@ -57,11 +57,17 @@ export class AuthGuard implements CanActivate {
 
       request.userId = parseInt(payload.userId);
       request.email = payload.email;
-      request.is_admin = payload.is_admin;
+      request.is_admin = Boolean(payload.is_admin);
       console.log(payload);
     } catch (err) {
       if (err instanceof TokenExpiredError) {
-        this.createAccessTokenFromRefreshToken(refresh_token, request);
+        const { userId, email, is_admin } =
+          await this.createAccessTokenFromRefreshToken(refresh_token);
+
+        console.log('From catch Token Expired Error', userId, email, is_admin);
+        request.userId = userId;
+        request.email = email;
+        request.is_admin = is_admin;
         return true;
       }
       console.log(err);
@@ -76,8 +82,7 @@ export class AuthGuard implements CanActivate {
 
   private async createAccessTokenFromRefreshToken(
     refresh_token: string,
-    request: any,
-  ) {
+  ): Promise<{ userId: number; email: string; is_admin: boolean }> {
     try {
       const payload = this.jwtService.verify(refresh_token, {
         secret: process.env.REFRESH_TOKEN_SECRET,
@@ -97,10 +102,11 @@ export class AuthGuard implements CanActivate {
         throw new CustomException('Invalid Refresh Token', HttpStatus.CONFLICT);
       }
 
-      request.userId = parseInt(payload.userId);
-      request.email = payload.email;
-      request.is_admin = payload.is_admin;
-      console.log('through refresh token', payload);
+      return {
+        userId: parseInt(payload.userId),
+        email: payload.email,
+        is_admin: payload.is_admin,
+      };
     } catch (e) {
       console.log(e);
       throw new CustomException(

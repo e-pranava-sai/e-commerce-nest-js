@@ -12,6 +12,7 @@ import { CartsModule } from './carts/carts.module';
 import { CartItemsModule } from './cart_items/cart_items.module';
 import { OrdersModule } from './orders/orders.module';
 import { OrderItemsModule } from './order_items/order_items.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { OrderItemsModule } from './order_items/order_items.module';
     CartItemsModule,
     OrdersModule,
     OrderItemsModule,
+    AuthModule,
     JwtModule.register({
       global: true,
     }),

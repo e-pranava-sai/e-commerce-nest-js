@@ -76,7 +76,7 @@ export class OrderItemsService {
         throw new CustomException('Order not found', HttpStatus.NOT_FOUND);
       }
 
-      if (existOrder.user_id !== userId) {
+      if (+existOrder.user_id !== +userId) {
         throw new CustomException('Order not found', HttpStatus.NOT_FOUND);
       }
 
