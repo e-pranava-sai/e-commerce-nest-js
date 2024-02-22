@@ -1,5 +1,7 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, UseInterceptors } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { CreateUserDto } from 'src/users/user.dto';
+import { ExtraFieldsInterceptor } from 'src/interceptors/extrafields.interceptor';
 
 @Controller('api/v1/auth')
 export class AuthController {
@@ -14,12 +16,8 @@ export class AuthController {
   }
 
   @Post('signup')
-  signup(
-    @Body('name') name: string,
-    @Body('email') email: string,
-    @Body('password') password: string,
-    @Body('is_admin') is_admin: boolean,
-  ): Record<string, any> {
-    return this.authService.signup(name, email, password, is_admin);
+  @UseInterceptors(ExtraFieldsInterceptor.bind(this, CreateUserDto.fields))
+  signup(@Body() createUserDto: CreateUserDto): Record<string, any> {
+    return this.authService.signup(createUserDto);
   }
 }

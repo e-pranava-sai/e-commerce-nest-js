@@ -3,14 +3,19 @@ import {
   Controller,
   Delete,
   Get,
+  HttpStatus,
   Param,
   Post,
   Put,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AuthorizeGuard } from 'src/middleware/authorization.middleware';
 import { AuthGuard } from 'src/middleware/authentication.middleware';
+import { CreateUserDto } from './user.dto';
+import { ExtraFieldsInterceptor } from 'src/interceptors/extrafields.interceptor';
+import { ParseIntPipe } from 'src/pipes/parseInt.pipe';
 
 @Controller('api/v1/users')
 export class UsersController {
@@ -24,35 +29,37 @@ export class UsersController {
 
   @UseGuards(AuthGuard, AuthorizeGuard)
   @Post()
-  createUser(
-    @Body('name') name: string,
-    @Body('email') email: string,
-    @Body('password') password: string,
-    @Body('is_admin') is_admin: boolean,
-  ): Record<string, any> {
-    return this.usersService.createUser(name, email, password, is_admin);
+  @UseInterceptors(ExtraFieldsInterceptor.bind(this, CreateUserDto.fields))
+  createUser(@Body() createUserDto: CreateUserDto): Record<string, any> {
+    return this.usersService.createUser(createUserDto);
   }
 
   @UseGuards(AuthGuard, AuthorizeGuard)
   @Get(':id')
-  getUserById(@Param('id') userId: number): Record<string, any> {
+  getUserById(
+    @Param('id', ParseIntPipe)
+    userId: number,
+  ): Record<string, any> {
     return this.usersService.getUserById(userId);
   }
 
   @UseGuards(AuthGuard, AuthorizeGuard)
   @Delete(':id')
-  deleteUser(@Param('id') userId: number): Record<string, any> {
+  deleteUser(
+    @Param('id', ParseIntPipe)
+    userId: number,
+  ): Record<string, any> {
     return this.usersService.deleteUser(userId);
   }
 
   @UseGuards(AuthGuard)
   @Put(':id')
   updateUser(
-    @Param('id') userId: number,
+    @Param('id', ParseIntPipe)
+    userId: number,
     @Body('name') name: string,
     @Body('email') email: string,
-    @Body('password') password: string,
   ): Record<string, any> {
-    return this.usersService.updateUser(userId, name, email, password);
+    return this.usersService.updateUser(userId, name, email);
   }
 }

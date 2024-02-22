@@ -1,10 +1,12 @@
 import { User } from 'src/users/user.entity';
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('products')
@@ -22,13 +24,22 @@ export class Product {
   })
   price: number;
 
-  @Column({ type: 'int' })
-  owner_id: number;
-
-  @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'owner_id' })
-  private _user: User;
+  @ManyToOne(() => User, (user) => user.products, { onDelete: 'CASCADE' })
+  owner: User;
 
   @Column({ type: 'varchar', length: 255 })
   category: string;
+
+  @CreateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+  })
+  public created_at: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+    onUpdate: 'CURRENT_TIMESTAMP(6)',
+  })
+  public updated_at: Date;
 }

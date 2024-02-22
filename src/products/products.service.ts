@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { CustomException } from 'src/exception_filters/custom.exception';
 import { User } from 'src/users/user.entity';
 import { REQUEST } from '@nestjs/core';
+import { CreateProductDto } from './product.dto';
 
 @Injectable()
 export class ProductsService {
@@ -52,7 +53,7 @@ export class ProductsService {
         throw new CustomException('User not found', HttpStatus.NOT_FOUND);
       }
       const products = await this.productRepository.find({
-        where: { owner_id: ownerId },
+        where: { owner: { id: ownerId } },
       });
       return { products };
     } catch (e) {
@@ -82,27 +83,32 @@ export class ProductsService {
   }
 
   async createProduct(
-    name: string,
-    price: number,
-    category: string,
+    createProductDto: CreateProductDto,
   ): Promise<{ product: Product }> {
     try {
       const existProduct = await this.productRepository.findOne({
-        where: { name },
+        where: {
+          name: createProductDto.name,
+          category: createProductDto.category,
+        },
+      });
+
+      const user = await this.userRepository.findOne({
+        where: { id: this.request.userId },
       });
 
       if (existProduct) {
         throw new CustomException(
-          'Product already exists with this name',
+          'Product already exists with this name and this category',
           HttpStatus.CONFLICT,
         );
       }
 
       const newProduct = new Product();
-      newProduct.name = name;
-      newProduct.price = price;
-      newProduct.category = category;
-      newProduct.owner_id = this.request.userId;
+      newProduct.name = createProductDto.name;
+      newProduct.price = createProductDto.price;
+      newProduct.category = createProductDto.category;
+      newProduct.owner = user;
       const product = await this.productRepository.save(newProduct);
       return { product };
     } catch (e) {
@@ -123,12 +129,14 @@ export class ProductsService {
     try {
       const existProduct = await this.productRepository.findOne({
         where: { id },
+        relations: { owner: true },
       });
 
       if (!existProduct) {
         throw new CustomException('Product not found', HttpStatus.NOT_FOUND);
       }
-      if (existProduct.owner_id !== this.request.userId) {
+
+      if (existProduct.owner.id !== this.request.userId) {
         throw new CustomException(
           'You are not authorized to update this product',
           HttpStatus.UNAUTHORIZED,
@@ -136,7 +144,11 @@ export class ProductsService {
       }
       const updated_product = await this.productRepository.update(
         { id },
-        { name, price, category },
+        {
+          name: name || existProduct.name,
+          price: price || existProduct.price,
+          category: category || existProduct.category,
+        },
       );
       return { message: `Product with ID: ${id} updated successfully` };
     } catch (e) {
@@ -165,12 +177,13 @@ export class ProductsService {
 
       const existProduct = await this.productRepository.findOne({
         where: { id: productId },
+        relations: { owner: true },
       });
       if (!existProduct) {
         throw new CustomException('Product not found', HttpStatus.NOT_FOUND);
       }
 
-      if (+existProduct.owner_id !== +ownerId) {
+      if (+existProduct.owner.id !== +ownerId) {
         throw new CustomException(
           `Product not found for this user: ${ownerId}, product id: ${productId}.`,
           HttpStatus.UNAUTHORIZED,
@@ -178,7 +191,11 @@ export class ProductsService {
       }
       const updated_product = await this.productRepository.update(
         { id: productId },
-        { name, price, category },
+        {
+          name: name || existProduct.name,
+          price: price || existProduct.price,
+          category: category || existProduct.category,
+        },
       );
       return { message: `Product with ID: ${productId} updated successfully` };
     } catch (e) {
@@ -192,11 +209,14 @@ export class ProductsService {
 
   async deleteProduct(id: number): Promise<{ message: string }> {
     try {
-      const product = await this.productRepository.findOne({ where: { id } });
+      const product = await this.productRepository.findOne({
+        where: { id },
+        relations: { owner: true },
+      });
       if (!product) {
         throw new CustomException('Product not found', HttpStatus.NOT_FOUND);
       }
-      if (product.owner_id !== this.request.userId) {
+      if (product.owner.id !== this.request.userId) {
         throw new CustomException(
           'You are not authorized to delete this product',
           HttpStatus.UNAUTHORIZED,

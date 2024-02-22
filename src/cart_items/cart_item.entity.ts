@@ -3,10 +3,12 @@ import { Product } from 'src/products/product.entity';
 import { User } from 'src/users/user.entity';
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('cart_items')
@@ -28,13 +30,22 @@ export class CartItem {
   @JoinColumn({ name: 'product_id' })
   private _product: Product;
 
-  @Column({ type: 'int' })
-  cart_id: number;
-
-  @ManyToOne(() => Cart, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'cart_id' })
-  private _cart: Cart;
+  @ManyToOne(() => Cart, (cart) => cart.cartItems)
+  cart: Cart;
 
   @Column({ type: 'int' })
   quantity: number;
+
+  @CreateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+  })
+  public created_at: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+    onUpdate: 'CURRENT_TIMESTAMP(6)',
+  })
+  public updated_at: Date;
 }

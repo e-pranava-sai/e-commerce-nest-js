@@ -1,4 +1,4 @@
-import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OrderItem } from './order_item.entity';
 import { Repository } from 'typeorm';
@@ -6,6 +6,7 @@ import { CustomException } from 'src/exception_filters/custom.exception';
 import { User } from 'src/users/user.entity';
 import { Product } from 'src/products/product.entity';
 import { Orders } from 'src/orders/order.entity';
+import { CreateOrderItemDto } from './order_item.dto';
 
 @Injectable()
 export class OrderItemsService {
@@ -58,8 +59,7 @@ export class OrderItemsService {
   async createOrderItemByUserIdOrderId(
     userId: number,
     orderId: number,
-    productId: number,
-    quantity: number,
+    createOrderItemDto: CreateOrderItemDto,
   ): Promise<{ orderItem: OrderItem }> {
     try {
       const existUser = await this.userRepository.findOne({
@@ -71,17 +71,20 @@ export class OrderItemsService {
 
       const existOrder = await this.ordersRepository.findOne({
         where: { id: orderId },
+        relations: { user: true },
       });
       if (!existOrder) {
         throw new CustomException('Order not found', HttpStatus.NOT_FOUND);
       }
 
-      if (+existOrder.user_id !== +userId) {
+      console.log(existOrder);
+
+      if (+existOrder.user.id !== +userId) {
         throw new CustomException('Order not found', HttpStatus.NOT_FOUND);
       }
 
       const existProduct = await this.productRepository.findOne({
-        where: { id: productId },
+        where: { id: createOrderItemDto.product_id },
       });
       if (!existProduct) {
         throw new CustomException('Product not found', HttpStatus.NOT_FOUND);
@@ -89,10 +92,10 @@ export class OrderItemsService {
 
       const orderItem = await this.orderItemRepository.save({
         user_id: userId,
-        order_id: orderId,
-        product_id: productId,
+        order: existOrder,
+        product_id: createOrderItemDto.product_id,
         product_price: existProduct.price,
-        quantity,
+        quantity: createOrderItemDto.quantity,
       });
       await this.orderItemRepository.save(orderItem);
       return { orderItem };

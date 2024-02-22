@@ -11,6 +11,8 @@ import {
 import { OrderItemsService } from './order_items.service';
 import { AuthGuard } from 'src/middleware/authentication.middleware';
 import { AuthorizeGuard } from 'src/middleware/authorization.middleware';
+import { ParseIntPipe } from 'src/pipes/parseInt.pipe';
+import { CreateOrderItemDto } from './order_item.dto';
 
 @Controller('api/v1/order-item')
 export class OrderItemsController {
@@ -33,45 +35,43 @@ export class OrderItemsController {
 
   @UseGuards(AuthGuard, AuthorizeGuard)
   @Get(':userId')
-  getOrderItemsByUserId(@Param('userId') userId: number): Record<string, any> {
+  getOrderItemsByUserId(
+    @Param('userId', ParseIntPipe) userId: number,
+  ): Record<string, any> {
     return this.orderItemsService.getOrderItemsByUserId(userId);
   }
 
   @UseGuards(AuthGuard)
   @Post('user/:orderId')
   createOrderItemByLoggedUserOrderId(
-    @Param('orderId') orderId: number,
-    @Body('product_id') productId: number,
-    @Body('quantity') quantity: number,
+    @Param('orderId', ParseIntPipe) orderId: number,
+    @Body() createOrderItemDto: CreateOrderItemDto,
   ): Record<string, any> {
     return this.orderItemsService.createOrderItemByUserIdOrderId(
       this.request.userId,
       orderId,
-      productId,
-      quantity,
+      createOrderItemDto,
     );
   }
 
   @UseGuards(AuthGuard, AuthorizeGuard)
   @Post(':userId/:orderId')
   createOrderItemByUserIdOrderId(
-    @Param('userId') userId: number,
-    @Param('orderId') orderId: number,
-    @Body('product_id') productId: number,
-    @Body('quantity') quantity: number,
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('orderId', ParseIntPipe) orderId: number,
+    @Body() createOrderItemDto: CreateOrderItemDto,
   ): Record<string, any> {
     return this.orderItemsService.createOrderItemByUserIdOrderId(
       userId,
       orderId,
-      productId,
-      quantity,
+      createOrderItemDto,
     );
   }
 
   @UseGuards(AuthGuard, AuthorizeGuard)
   @Delete(':orderItemId')
   deleteOrderItem(
-    @Param('orderItemId') orderItemId: number,
+    @Param('orderItemId', ParseIntPipe) orderItemId: number,
   ): Record<string, any> {
     return this.orderItemsService.deleteOrderItem(orderItemId);
   }

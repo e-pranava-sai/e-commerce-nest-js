@@ -6,6 +6,7 @@ import { User } from 'src/users/user.entity';
 import { Product } from 'src/products/product.entity';
 import { Cart } from 'src/carts/cart.entity';
 import { CustomException } from 'src/exception_filters/custom.exception';
+import { CreateCartItemDto } from './cart_item.dto';
 
 @Injectable()
 export class CartItemsService {
@@ -47,7 +48,7 @@ export class CartItemsService {
       }
 
       const cart_items = await this.cartItemRepository.find({
-        where: { cart_id: cart.id },
+        where: { cart: { id: cart.id } },
       });
       return { cart_items };
     } catch (e) {
@@ -61,8 +62,7 @@ export class CartItemsService {
 
   async createCartItemByUserId(
     userId: number,
-    productId: number,
-    quantity: number,
+    createCartItemDto: CreateCartItemDto,
   ): Promise<{ cart_item: CartItem }> {
     try {
       const user = await this.userRepository.findOne({ where: { id: userId } });
@@ -71,7 +71,7 @@ export class CartItemsService {
       }
 
       const product = await this.productRepository.findOne({
-        where: { id: productId },
+        where: { id: createCartItemDto.productId },
       });
       if (!product) {
         throw new CustomException('Product not found', HttpStatus.NOT_FOUND);
@@ -85,19 +85,22 @@ export class CartItemsService {
       }
 
       const cart_item = await this.cartItemRepository.findOne({
-        where: { cart_id: cart.id, product_id: productId },
+        where: {
+          cart: { id: cart.id },
+          product_id: createCartItemDto.productId,
+        },
       });
       if (cart_item) {
-        cart_item.quantity += quantity;
+        cart_item.quantity += createCartItemDto.quantity;
         await this.cartItemRepository.save(cart_item);
         return { cart_item };
       }
 
       const newCartItem = new CartItem();
       newCartItem.user_id = userId;
-      newCartItem.product_id = productId;
-      newCartItem.cart_id = cart.id;
-      newCartItem.quantity = quantity;
+      newCartItem.product_id = createCartItemDto.productId;
+      newCartItem.cart = cart;
+      newCartItem.quantity = createCartItemDto.quantity;
       await this.cartItemRepository.save(newCartItem);
       return { cart_item: newCartItem };
     } catch (e) {

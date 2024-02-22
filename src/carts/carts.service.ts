@@ -14,7 +14,9 @@ export class CartsService {
 
   async getCarts(): Promise<{ carts: Cart[] }> {
     try {
-      const carts = await this.cartRepository.find();
+      const carts = await this.cartRepository.find({
+        relations: { cartItems: true },
+      });
       return { carts };
     } catch (e) {
       console.log(e);
@@ -34,6 +36,7 @@ export class CartsService {
 
       const cart = await this.cartRepository.findOne({
         where: { user_id: userId },
+        relations: { cartItems: true },
       });
       if (!cart) {
         throw new CustomException('Cart not found', HttpStatus.NOT_FOUND);

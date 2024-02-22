@@ -4,6 +4,7 @@ import {
   Get,
   Inject,
   Param,
+  ParseIntPipe,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -32,25 +33,31 @@ export class CartsController {
 
   @UseGuards(AuthGuard, AuthorizeGuard)
   @Get(':userId')
-  getCartByUserId(@Param('userId') userId: number): Record<string, any> {
+  getCartByUserId(
+    @Param('userId', ParseIntPipe) userId: number,
+  ): Record<string, any> {
     return this.cartsService.getCartByUserId(userId);
   }
 
-  @UseGuards(AuthGuard)
-  @Post('user')
-  createCart(): Record<string, any> {
-    return this.cartsService.createCartByUserId(this.request.userId);
-  }
+  // @UseGuards(AuthGuard)
+  // @Post('user')
+  // createCart(): Record<string, any> {
+  //   return this.cartsService.createCartByUserId(this.request.userId);
+  // }
 
   @UseGuards(AuthGuard, AuthorizeGuard)
   @Post(':userId')
-  createCartByUserId(@Param('userId') userId: number): Record<string, any> {
+  createCartByUserId(
+    @Param('userId', ParseIntPipe) userId: number,
+  ): Record<string, any> {
     return this.cartsService.createCartByUserId(userId);
   }
 
   @UseGuards(AuthGuard, AuthorizeGuard)
   @Delete(':userId')
-  deleteCart(@Param('userId') userId: number): Record<string, any> {
+  deleteCart(
+    @Param('userId', ParseIntPipe) userId: number,
+  ): Record<string, any> {
     return this.cartsService.deleteCartByUserId(userId);
   }
 }

@@ -3,10 +3,12 @@ import { Product } from 'src/products/product.entity';
 import { User } from 'src/users/user.entity';
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('order_items')
@@ -17,12 +19,10 @@ export class OrderItem {
   @Column({ type: 'int' })
   quantity: number;
 
-  @Column({ type: 'int' })
-  order_id: number;
-
-  @ManyToOne(() => Orders, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'order_id' })
-  private _order: Orders;
+  @ManyToOne(() => Orders, (order) => order.order_items, {
+    onDelete: 'CASCADE',
+  })
+  order: Orders;
 
   @Column({ type: 'int' })
   product_id: number;
@@ -40,4 +40,17 @@ export class OrderItem {
 
   @Column({ type: 'decimal' })
   product_price: number;
+
+  @CreateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+  })
+  public created_at: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+    onUpdate: 'CURRENT_TIMESTAMP(6)',
+  })
+  public updated_at: Date;
 }

@@ -23,14 +23,14 @@ export class AuthGuard implements CanActivate {
     const [access_token, refresh_token] = this.extractTokenFromHeader(request);
 
     try {
-      if (!access_token) {
+      if (!access_token || access_token === 'null') {
         throw new CustomException(
           'Provide a valid access token',
           HttpStatus.UNAUTHORIZED,
         );
       }
 
-      if (!refresh_token) {
+      if (!refresh_token || refresh_token === 'null') {
         throw new CustomException(
           'Provide a valid refresh token',
           HttpStatus.UNAUTHORIZED,

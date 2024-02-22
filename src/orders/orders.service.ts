@@ -4,6 +4,7 @@ import { Orders } from './order.entity';
 import { Repository } from 'typeorm';
 import { CustomException } from 'src/exception_filters/custom.exception';
 import { User } from 'src/users/user.entity';
+import { CreateOrderDto } from './order.dto';
 
 @Injectable()
 export class OrdersService {
@@ -14,7 +15,9 @@ export class OrdersService {
 
   async getOrders(): Promise<{ orders: Orders[] }> {
     try {
-      const orders = await this.ordersRepository.find();
+      const orders = await this.ordersRepository.find({
+        relations: { order_items: true },
+      });
       return { orders };
     } catch (e) {
       console.log(e);
@@ -35,7 +38,8 @@ export class OrdersService {
       }
 
       const order = await this.ordersRepository.find({
-        where: { user_id: userId },
+        where: { user: { id: userId } },
+        relations: { order_items: true },
       });
       if (!order) {
         throw new CustomException('Order not found', HttpStatus.NOT_FOUND);
@@ -51,8 +55,7 @@ export class OrdersService {
   }
 
   async createOrderByUserId(
-    address: string,
-    phone: string,
+    createOrderDto: CreateOrderDto,
     userId: number,
   ): Promise<{ order: Orders }> {
     try {
@@ -64,9 +67,9 @@ export class OrdersService {
       }
 
       const order = await this.ordersRepository.save({
-        address,
-        phone,
-        user_id: userId,
+        address: createOrderDto.address,
+        phone: createOrderDto.phone,
+        user: existUser,
         date: new Date(),
       });
       await this.ordersRepository.save(order);

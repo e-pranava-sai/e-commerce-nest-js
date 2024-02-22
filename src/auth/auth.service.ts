@@ -1,7 +1,9 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Cart } from 'src/carts/cart.entity';
 import { CustomException } from 'src/exception_filters/custom.exception';
+import { CreateUserDto } from 'src/users/user.dto';
 import { User } from 'src/users/user.entity';
 import { Repository } from 'typeorm';
 
@@ -9,6 +11,7 @@ import { Repository } from 'typeorm';
 export class AuthService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
+    @InjectRepository(Cart) private cartRepository: Repository<Cart>,
     private jwtService: JwtService,
   ) {}
 
@@ -58,14 +61,11 @@ export class AuthService {
   }
 
   async signup(
-    name: string,
-    email: string,
-    password: string,
-    is_admin: boolean,
+    createUserDto: CreateUserDto,
   ): Promise<{ access_token: string; refresh_token: string }> {
     try {
       const exis_user = await this.userRepository.findOne({
-        where: { email },
+        where: { email: createUserDto.email },
       });
 
       if (exis_user !== null) {
@@ -76,12 +76,14 @@ export class AuthService {
       }
 
       const new_user = new User();
-      new_user.name = name;
-      new_user.email = email;
-      new_user.password = password;
-      new_user.is_admin = is_admin;
+      new_user.name = createUserDto.name;
+      new_user.email = createUserDto.email;
+      new_user.password = createUserDto.password;
+      new_user.is_admin = createUserDto.is_admin;
 
       const user = await this.userRepository.save(new_user);
+
+      const cart = await this.cartRepository.save({ user_id: user.id });
 
       const payload = {
         userId: user.id,

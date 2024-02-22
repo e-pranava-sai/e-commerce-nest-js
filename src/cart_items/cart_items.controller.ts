@@ -8,10 +8,14 @@ import {
   Post,
   Put,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CartItemsService } from './cart_items.service';
 import { AuthorizeGuard } from 'src/middleware/authorization.middleware';
 import { AuthGuard } from 'src/middleware/authentication.middleware';
+import { CreateCartItemDto } from './cart_item.dto';
+import { ParseIntPipe } from 'src/pipes/parseInt.pipe';
+import { ExtraFieldsInterceptor } from 'src/interceptors/extrafields.interceptor';
 
 @Controller('api/v1/cart-item')
 export class CartItemsController {
@@ -34,20 +38,21 @@ export class CartItemsController {
 
   @UseGuards(AuthGuard, AuthorizeGuard)
   @Get(':userId')
-  getCartItemsByUserId(userId: number): Record<string, any> {
+  getCartItemsByUserId(
+    @Param('userId', ParseIntPipe) userId: number,
+  ): Record<string, any> {
     return this.cartItemService.getCartItemsByUserId(userId);
   }
 
   @UseGuards(AuthGuard)
   @Post('user')
+  @UseInterceptors(ExtraFieldsInterceptor.bind(this, CreateCartItemDto.fields))
   createCartItemByLoggedUser(
-    @Body('productId') productId: number,
-    @Body('quantity') quantity: number,
+    @Body() createCartItemDto: CreateCartItemDto,
   ): Record<string, any> {
     return this.cartItemService.createCartItemByUserId(
       this.request.userId,
-      productId,
-      quantity,
+      createCartItemDto,
     );
   }
 
@@ -55,7 +60,7 @@ export class CartItemsController {
   @Put(':cartItemId')
   updateCartItem(
     @Param('cartItemId') cartItemId: number,
-    @Body('quantity') quantity: number,
+    @Body('quantity', ParseIntPipe) quantity: number,
   ): Record<string, any> {
     return this.cartItemService.updateCartItem(cartItemId, quantity);
   }
@@ -63,7 +68,7 @@ export class CartItemsController {
   @UseGuards(AuthGuard)
   @Delete('/user/:cartItemId')
   deleteCartItemByLoggedUser(
-    @Param('cartItemId') cartItemId: number,
+    @Param('cartItemId', ParseIntPipe) cartItemId: number,
   ): Record<string, any> {
     return this.cartItemService.deleteCartItem(cartItemId);
   }

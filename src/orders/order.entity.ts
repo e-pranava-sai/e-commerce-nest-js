@@ -1,11 +1,14 @@
+import { OrderItem } from 'src/order_items/order_item.entity';
 import { User } from 'src/users/user.entity';
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('orders')
@@ -19,13 +22,25 @@ export class Orders {
   @Column({ type: 'varchar', length: 255 })
   address: string;
 
-  @Column({ type: 'int' })
-  user_id: number;
-
-  @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id' })
-  private _user: User;
+  @ManyToOne(() => User, (user) => user.orders)
+  user: User;
 
   @Column({ type: 'date', default: () => 'CURRENT_DATE' })
   date: Date;
+
+  @OneToMany(() => OrderItem, (orderItem) => orderItem.order)
+  order_items: OrderItem[];
+
+  @CreateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+  })
+  public created_at: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+    onUpdate: 'CURRENT_TIMESTAMP(6)',
+  })
+  public updated_at: Date;
 }
