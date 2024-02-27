@@ -117,9 +117,17 @@ export class CartItemsService {
     quantity: number,
   ): Promise<Record<string, any>> {
     try {
+      if (!quantity) {
+        throw new CustomException(
+          'Please provide fields that needs to be updated.',
+          HttpStatus.NOT_ACCEPTABLE,
+        );
+      }
+
       const cart_item = await this.cartItemRepository.findOne({
         where: { id: cartItemId },
       });
+
       if (!cart_item) {
         throw new CustomException('Cart item not found', HttpStatus.NOT_FOUND);
       }

@@ -7,6 +7,7 @@ import {
 import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Request } from 'express';
+import { BlackListService } from 'src/black_list/black_list.service';
 import { CustomException } from 'src/exception_filters/custom.exception';
 import { User } from 'src/users/user.entity';
 import { Repository } from 'typeorm';
@@ -16,6 +17,7 @@ export class AuthGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     @InjectRepository(User) private userRepository: Repository<User>,
+    private blacklistService: BlackListService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -33,6 +35,17 @@ export class AuthGuard implements CanActivate {
       if (!refresh_token || refresh_token === 'null') {
         throw new CustomException(
           'Provide a valid refresh token',
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+
+      if (
+        await this.blacklistService.isTokenBlacklisted(
+          request.headers['authorization'],
+        )
+      ) {
+        throw new CustomException(
+          'Invalid token. Relogin',
           HttpStatus.UNAUTHORIZED,
         );
       }

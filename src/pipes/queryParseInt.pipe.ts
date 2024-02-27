@@ -11,12 +11,21 @@ function isNumeric(value: string) {
 }
 
 @Injectable()
-export class ParseIntPipe implements PipeTransform<string, number> {
+export class QueryParseIntPipe implements PipeTransform<string, number> {
   transform(value: string, metadata: ArgumentMetadata): number {
     try {
+      if (!value) {
+        return parseInt(value);
+      }
       if (isNaN(parseInt(value)) || !isNumeric(value)) {
         throw new CustomException(
-          'Params should be integer.',
+          'Query Params should be integer.',
+          HttpStatus.NOT_ACCEPTABLE,
+        );
+      }
+      if (parseInt(value) === 0) {
+        throw new CustomException(
+          'Query Params should be greater than 0',
           HttpStatus.NOT_ACCEPTABLE,
         );
       }

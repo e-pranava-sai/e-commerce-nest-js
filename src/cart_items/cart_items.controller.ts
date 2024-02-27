@@ -14,7 +14,7 @@ import { CartItemsService } from './cart_items.service';
 import { AuthorizeGuard } from 'src/middleware/authorization.middleware';
 import { AuthGuard } from 'src/middleware/authentication.middleware';
 import { CreateCartItemDto } from './cart_item.dto';
-import { ParseIntPipe } from 'src/pipes/parseInt.pipe';
+import { ParamParseIntPipe } from 'src/pipes/paramParseInt.pipe';
 import { ExtraFieldsInterceptor } from 'src/interceptors/extrafields.interceptor';
 
 @Controller('api/v1/cart-item')
@@ -39,7 +39,7 @@ export class CartItemsController {
   @UseGuards(AuthGuard, AuthorizeGuard)
   @Get(':userId')
   getCartItemsByUserId(
-    @Param('userId', ParseIntPipe) userId: number,
+    @Param('userId', ParamParseIntPipe) userId: number,
   ): Record<string, any> {
     return this.cartItemService.getCartItemsByUserId(userId);
   }
@@ -60,7 +60,7 @@ export class CartItemsController {
   @Put(':cartItemId')
   updateCartItem(
     @Param('cartItemId') cartItemId: number,
-    @Body('quantity', ParseIntPipe) quantity: number,
+    @Body('quantity', ParamParseIntPipe) quantity: number,
   ): Record<string, any> {
     return this.cartItemService.updateCartItem(cartItemId, quantity);
   }
@@ -68,7 +68,7 @@ export class CartItemsController {
   @UseGuards(AuthGuard)
   @Delete('/user/:cartItemId')
   deleteCartItemByLoggedUser(
-    @Param('cartItemId', ParseIntPipe) cartItemId: number,
+    @Param('cartItemId', ParamParseIntPipe) cartItemId: number,
   ): Record<string, any> {
     return this.cartItemService.deleteCartItem(cartItemId);
   }

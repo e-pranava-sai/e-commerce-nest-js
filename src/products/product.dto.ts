@@ -9,9 +9,8 @@ export class CreateProductDto {
   @IsNumber()
   price: number;
 
-  @IsString()
-  @IsNotEmpty()
-  category: string;
+  @IsNumber()
+  categoryId: number;
 
-  static fields = ['name', 'price', 'category'];
+  static fields = ['name', 'price', 'categoryId'];
 }

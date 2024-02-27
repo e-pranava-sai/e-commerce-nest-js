@@ -1,43 +1,25 @@
-import { Exclude } from 'class-transformer';
-import { Cart } from 'src/carts/cart.entity';
-import { Orders } from 'src/orders/order.entity';
 import { Product } from 'src/products/product.entity';
+import { User } from 'src/users/user.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
+  ManyToOne,
   OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity('users')
-export class User {
+@Entity('categories')
+export class Category {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ type: 'varchar', length: 255 })
   name: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  email: string;
-
-  @Column({ type: 'varchar', length: 255 })
-  password: string;
-
-  @Column({ type: 'bool' })
-  is_admin: boolean;
-
-  @OneToMany(() => Product, (product) => product.owner)
+  @OneToMany(() => Product, (product) => product.category)
   products: Product[];
-
-  @OneToMany(() => Orders, (orders) => orders.user)
-  orders: Orders[];
-
-  @OneToOne(() => Cart, (cart) => cart.user)
-  cart: Cart;
 
   @CreateDateColumn({
     type: 'timestamp',

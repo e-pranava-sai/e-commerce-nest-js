@@ -6,17 +6,29 @@ import { CustomException } from 'src/exception_filters/custom.exception';
 import { User } from 'src/users/user.entity';
 import { REQUEST } from '@nestjs/core';
 import { CreateProductDto } from './product.dto';
+import { Category } from 'src/categories/category.entity';
 
 @Injectable()
 export class ProductsService {
   constructor(
     @InjectRepository(Product) private productRepository: Repository<Product>,
     @InjectRepository(User) private userRepository: Repository<User>,
+    @InjectRepository(Category)
+    private categoryRepository: Repository<Category>,
     @Inject(REQUEST) private readonly request: { userId: number },
   ) {}
 
-  async getProducts(): Promise<{ products: Product[] }> {
+  async getProducts(productId: number): Promise<{ products: Product[] }> {
     try {
+      if (productId) {
+        const product = await this.productRepository.findOne({
+          where: { id: productId },
+        });
+        if (!product) {
+          throw new CustomException('Product not found', HttpStatus.NOT_FOUND);
+        }
+        return { products: [product] };
+      }
       const products = await this.productRepository.find();
       return { products };
     } catch (e) {
@@ -28,21 +40,16 @@ export class ProductsService {
     }
   }
 
-  async getProductById(id: number): Promise<{ product: Product }> {
-    try {
-      const product = await this.productRepository.findOne({ where: { id } });
-      if (!product) {
-        throw new CustomException('Product not found', HttpStatus.NOT_FOUND);
-      }
-      return { product };
-    } catch (e) {
-      console.log(e);
-      throw new CustomException(
-        e.message || 'Internal Server Error',
-        e.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
+  // async getProductById(id: number): Promise<{ product: Product }> {
+  //   try {
+  //   } catch (e) {
+  //     console.log(e);
+  //     throw new CustomException(
+  //       e.message || 'Internal Server Error',
+  //       e.status || HttpStatus.INTERNAL_SERVER_ERROR,
+  //     );
+  //   }
+  // }
 
   async getProductByOwnerId(ownerId: number): Promise<{ products: Product[] }> {
     try {
@@ -65,31 +72,39 @@ export class ProductsService {
     }
   }
 
-  async getProductByCategory(
-    category: string,
-  ): Promise<{ products: Product[] }> {
-    try {
-      const products = await this.productRepository.find({
-        where: { category },
-      });
-      return { products };
-    } catch (e) {
-      console.log(e);
-      throw new CustomException(
-        e.message || 'Internal Server Error',
-        e.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
+  // async getProductByCategory(
+  //   category: number,
+  // ): Promise<{ products: Product[] }> {
+  //   try {
+  //     const products = await this.productRepository.find({
+  //       where: { category },
+  //     });
+  //     return { products };
+  //   } catch (e) {
+  //     console.log(e);
+  //     throw new CustomException(
+  //       e.message || 'Internal Server Error',
+  //       e.status || HttpStatus.INTERNAL_SERVER_ERROR,
+  //     );
+  //   }
+  // }
 
   async createProduct(
     createProductDto: CreateProductDto,
   ): Promise<{ product: Product }> {
     try {
+      const category = await this.categoryRepository.findOne({
+        where: { id: createProductDto.categoryId },
+      });
+
+      if (!category) {
+        throw new CustomException('Category not found!', HttpStatus.NOT_FOUND);
+      }
+
       const existProduct = await this.productRepository.findOne({
         where: {
           name: createProductDto.name,
-          category: createProductDto.category,
+          category: category,
         },
       });
 
@@ -107,7 +122,7 @@ export class ProductsService {
       const newProduct = new Product();
       newProduct.name = createProductDto.name;
       newProduct.price = createProductDto.price;
-      newProduct.category = createProductDto.category;
+      newProduct.category = category;
       newProduct.owner = user;
       const product = await this.productRepository.save(newProduct);
       return { product };
@@ -124,9 +139,16 @@ export class ProductsService {
     id: number,
     name: string,
     price: number,
-    category: string,
-  ): Promise<{ message: string }> {
+    categoryId: number,
+  ): Promise<{ product: Product }> {
     try {
+      if (!name && !price && !categoryId) {
+        throw new CustomException(
+          'Please provide fields that needs to be updated.',
+          HttpStatus.NOT_ACCEPTABLE,
+        );
+      }
+
       const existProduct = await this.productRepository.findOne({
         where: { id },
         relations: { owner: true },
@@ -142,15 +164,21 @@ export class ProductsService {
           HttpStatus.UNAUTHORIZED,
         );
       }
-      const updated_product = await this.productRepository.update(
-        { id },
-        {
-          name: name || existProduct.name,
-          price: price || existProduct.price,
-          category: category || existProduct.category,
-        },
-      );
-      return { message: `Product with ID: ${id} updated successfully` };
+
+      const category = await this.categoryRepository.findOne({
+        where: { id: categoryId },
+      });
+      if (!category) {
+        throw new CustomException('Category not found', HttpStatus.NOT_FOUND);
+      }
+
+      existProduct.name = name || existProduct.name;
+      existProduct.price = price || existProduct.price;
+      existProduct.category = category || existProduct.category;
+
+      const updated_product = await this.productRepository.save(existProduct);
+
+      return { product: updated_product };
     } catch (e) {
       console.log(e);
       throw new CustomException(
@@ -165,9 +193,16 @@ export class ProductsService {
     productId: number,
     name: string,
     price: number,
-    category: string,
-  ): Promise<{ message: string }> {
+    categoryId: number,
+  ): Promise<{ product: Product }> {
     try {
+      if (!name && !price && !categoryId) {
+        throw new CustomException(
+          'Please provide fields that needs to be updated.',
+          HttpStatus.NOT_ACCEPTABLE,
+        );
+      }
+
       const user = await this.userRepository.findOne({
         where: { id: ownerId },
       });
@@ -189,15 +224,21 @@ export class ProductsService {
           HttpStatus.UNAUTHORIZED,
         );
       }
-      const updated_product = await this.productRepository.update(
-        { id: productId },
-        {
-          name: name || existProduct.name,
-          price: price || existProduct.price,
-          category: category || existProduct.category,
-        },
-      );
-      return { message: `Product with ID: ${productId} updated successfully` };
+
+      const category = await this.categoryRepository.findOne({
+        where: { id: categoryId },
+      });
+      if (!category) {
+        throw new CustomException('Category not found', HttpStatus.NOT_FOUND);
+      }
+
+      existProduct.name = name || existProduct.name;
+      existProduct.price = price || existProduct.price;
+      existProduct.category = category || existProduct.category;
+
+      const updated_product = await this.productRepository.save(existProduct);
+
+      return { product: updated_product };
     } catch (e) {
       console.log(e);
       throw new CustomException(

@@ -13,7 +13,8 @@ import { CartItemsModule } from './cart_items/cart_items.module';
 import { OrdersModule } from './orders/orders.module';
 import { OrderItemsModule } from './order_items/order_items.module';
 import { AuthModule } from './auth/auth.module';
-
+import { CategoryModule } from './categories/category.module';
+import { BlacklistModuel } from './black_list/black_list.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -37,6 +38,8 @@ import { AuthModule } from './auth/auth.module';
     OrdersModule,
     OrderItemsModule,
     AuthModule,
+    CategoryModule,
+    BlacklistModuel,
     JwtModule.register({
       global: true,
     }),

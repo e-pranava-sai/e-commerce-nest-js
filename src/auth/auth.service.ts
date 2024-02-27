@@ -3,9 +3,11 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cart } from 'src/carts/cart.entity';
 import { CustomException } from 'src/exception_filters/custom.exception';
-import { CreateUserDto } from 'src/users/user.dto';
+import { CreateUserDto } from 'src/users/dto/user.dto';
 import { User } from 'src/users/user.entity';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
+import { UserDetailsDto } from './user_details.dto';
 
 @Injectable()
 export class AuthService {
@@ -16,19 +18,23 @@ export class AuthService {
   ) {}
 
   async login(
-    email: string,
-    password: string,
+    userDetailsDto: UserDetailsDto,
   ): Promise<{ access_token: string; refresh_token: string }> {
     try {
       const user = await this.userRepository.findOne({
-        where: { email },
+        where: { email: userDetailsDto.email },
       });
 
       if (!user) {
         throw new CustomException('User not found', HttpStatus.NOT_FOUND);
       }
 
-      if (user.password !== password) {
+      const isMatch = await bcrypt.compare(
+        userDetailsDto.password,
+        user.password,
+      );
+
+      if (!isMatch) {
         throw new CustomException(
           'Password incorrect',
           HttpStatus.UNAUTHORIZED,
@@ -75,10 +81,12 @@ export class AuthService {
         );
       }
 
+      const password_hash = await bcrypt.hash(createUserDto.password, 10);
+
       const new_user = new User();
       new_user.name = createUserDto.name;
       new_user.email = createUserDto.email;
-      new_user.password = createUserDto.password;
+      new_user.password = password_hash;
       new_user.is_admin = createUserDto.is_admin;
 
       const user = await this.userRepository.save(new_user);

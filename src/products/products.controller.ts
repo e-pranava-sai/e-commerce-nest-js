@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -15,8 +16,8 @@ import { CacheKey, CacheTTL } from '@nestjs/cache-manager';
 import { AuthorizeGuard } from 'src/middleware/authorization.middleware';
 import { CreateProductDto } from './product.dto';
 import { ExtraFieldsInterceptor } from 'src/interceptors/extrafields.interceptor';
-import { ParseIntPipe } from 'src/pipes/parseInt.pipe';
-import { ParseStringPipe } from 'src/pipes/parseString.pipe';
+import { ParamParseIntPipe } from 'src/pipes/paramParseInt.pipe';
+import { QueryParseIntPipe } from 'src/pipes/queryParseInt.pipe';
 
 @Controller('api/v1/products')
 export class ProductsController {
@@ -25,27 +26,29 @@ export class ProductsController {
   @CacheKey('products')
   @CacheTTL(30)
   @Get()
-  getProducts(): Record<string, any> {
-    return this.productsService.getProducts();
+  getProducts(
+    @Query('productId', QueryParseIntPipe) productId: number,
+  ): Record<string, any> {
+    return this.productsService.getProducts(productId);
   }
 
-  @Get(':id')
-  getProductById(
-    @Param('id', ParseIntPipe) productId: number,
-  ): Record<string, any> {
-    return this.productsService.getProductById(productId);
-  }
+  // @Get(':id')
+  // getProductById(
+  //   @Param('id', ParamParseIntPipe) productId: number,
+  // ): Record<string, any> {
+  //   return this.productsService.getProductById(productId);
+  // }
 
-  @Get('category/:category')
-  getProductByCategory(
-    @Param('category', ParseStringPipe) category: string,
-  ): Record<string, any> {
-    return this.productsService.getProductByCategory(category);
-  }
+  // @Get('category/:category')
+  // getProductByCategory(
+  //   @Param('category', ParseStringPipe) category: string,
+  // ): Record<string, any> {
+  //   return this.productsService.getProductByCategory(category);
+  // }
 
   @Get('owner/:id')
   getProductByOwnerId(
-    @Param('id', ParseIntPipe) ownerId: number,
+    @Param('id', ParamParseIntPipe) ownerId: number,
   ): Record<string, any> {
     return this.productsService.getProductByOwnerId(ownerId);
   }
@@ -63,41 +66,41 @@ export class ProductsController {
   @UseGuards(AuthGuard)
   @Put(':id')
   updateProduct(
-    @Param('id', ParseIntPipe) productId: number,
+    @Param('id', ParamParseIntPipe) productId: number,
     @Body('name') name: string,
     @Body('price') price: number,
-    @Body('category') catergory: string,
+    @Body('categoryId') catergoryId: number,
   ): Record<string, any> {
     return this.productsService.updateProduct(
       productId,
       name,
       price,
-      catergory,
+      catergoryId,
     );
   }
 
   @UseGuards(AuthGuard, AuthorizeGuard)
   @Put(':ownerId/:productId')
   updateProductByOwnerId(
-    @Param('ownerId', ParseIntPipe) ownerId: number,
-    @Param('productId', ParseIntPipe) productId: number,
+    @Param('ownerId', ParamParseIntPipe) ownerId: number,
+    @Param('productId', ParamParseIntPipe) productId: number,
     @Body('name') name: string,
     @Body('price') price: number,
-    @Body('category') catergory: string,
+    @Body('categoryId') catergoryId: number,
   ): Record<string, any> {
     return this.productsService.updateProductByOwnerId(
       ownerId,
       productId,
       name,
       price,
-      catergory,
+      catergoryId,
     );
   }
 
   @UseGuards(AuthGuard)
   @Delete(':id')
   deleteProduct(
-    @Param('id', ParseIntPipe) productId: number,
+    @Param('id', ParamParseIntPipe) productId: number,
   ): Record<string, any> {
     return this.productsService.deleteProduct(productId);
   }

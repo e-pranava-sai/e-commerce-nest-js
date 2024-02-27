@@ -1,3 +1,4 @@
+import { Category } from 'src/categories/category.entity';
 import { User } from 'src/users/user.entity';
 import {
   Column,
@@ -5,6 +6,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -27,8 +29,10 @@ export class Product {
   @ManyToOne(() => User, (user) => user.products, { onDelete: 'CASCADE' })
   owner: User;
 
-  @Column({ type: 'varchar', length: 255 })
-  category: string;
+  @ManyToOne(() => Category, (category) => category.products, {
+    onDelete: 'CASCADE',
+  })
+  category: Category;
 
   @CreateDateColumn({
     type: 'timestamp',
